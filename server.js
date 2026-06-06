@@ -327,7 +327,38 @@ app.post("/api/alarm", async (req, res) => {
         });
     }
 });
+app.get("/api/debug/data", async (req, res) => {
+    try {
+        const [visitors] = await db.query(
+            "SELECT * FROM visitors ORDER BY entered_at DESC LIMIT 10"
+        );
 
+        const [events] = await db.query(
+            "SELECT * FROM events_history ORDER BY created_at DESC LIMIT 20"
+        );
+
+        const [state] = await db.query(
+            "SELECT * FROM current_state WHERE id = 1"
+        );
+
+        const [alarms] = await db.query(
+            "SELECT * FROM alarms_history ORDER BY created_at DESC LIMIT 10"
+        );
+
+        res.json({
+            visitors,
+            events,
+            current_state: state,
+            alarms
+        });
+    } catch (error) {
+        console.error("Debug data error:", error);
+        res.status(500).json({
+            status: "ERROR",
+            message: error.message
+        });
+    }
+});
 initializeDatabase()
     .then(() => {
         app.listen(PORT, () => {
